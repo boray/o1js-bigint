@@ -1,7 +1,7 @@
-# Mina zkApp: O1js Bigint
+# o1js-bigint: Provable BigInt
 
-This template uses TypeScript.
 
+---
 ## How to build
 
 ```sh

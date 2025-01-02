@@ -1,3 +1,3 @@
-import { Add } from './Add.js';
+import { BigInt384, BigInt2048 } from './BigInt.js';
 
-export { Add };
+export { BigInt384, BigInt2048 };
