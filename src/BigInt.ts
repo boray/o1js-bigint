@@ -174,10 +174,7 @@ class BigInt384 extends Struct({
         return { q: BigInt384.fromBigint(q), r: BigInt384.fromBigint(r) }; // return quotient and remainder
       }
     );
-    Provable.log("q", q.toBigint());
-    Provable.log("r", r.toBigint());
-    Provable.log("a", a.toBigint());
-    Provable.log("b", b.toBigint());
+    
     BigInt384.equals(this.add(this.mul(q, b), r), a).assertTrue(); // q * b + r % this == a % this
 
     return {

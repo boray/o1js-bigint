@@ -6,8 +6,8 @@ describe('BigInt384', () => {
       const value = 1234567890123456789012345678901234567890n;
       const bigInt = BigInt384.fromBigint(value);
       expect(bigInt.toBigint()).toStrictEqual(value);
-    });
-
+    }); 
+    
     it('should fail to create a BigInt384 instance from a negative number', () => {
       const value = -1234567890123456789012345678901234567890n;
       expect(() => { BigInt384.fromBigint(value) }).toThrow('Input must be non-negative');
