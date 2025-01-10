@@ -10,6 +10,18 @@ type BigIntParameter = {
 }
 
 const BigIntParams: { [key: string]: BigIntParameter } = {
+    "384_12": {
+        limb_num: 12,
+        limb_size: 32n,
+        mask: (1n << 32n) - 1n,
+        MAX: (1n << 384n) - 1n,
+    },
+    "384_9": {
+        limb_num: 9,
+        limb_size: 48n,
+        mask: (1n << 48n) - 1n,
+        MAX: (1n << 384n) - 1n,
+    },
     "384_6": {
         limb_num: 6,
         limb_size: 64n,
@@ -28,15 +40,63 @@ const BigIntParams: { [key: string]: BigIntParameter } = {
         mask: (1n << 192n) - 1n,
         MAX: (1n << 384n) - 1n,
     },
+    "512_16": {
+        limb_num: 16,
+        limb_size: 32n,
+        mask: (1n << 32n) - 1n,
+        MAX: (1n << 512n) - 1n,
+    },
+    "512_8": {
+        limb_num: 8,
+        limb_size: 64n,
+        mask: (1n << 64n) - 1n,
+        MAX: (1n << 512n) - 1n,
+    },
+    "512_4": {
+        limb_num: 4,
+        limb_size: 128n,
+        mask: (1n << 128n) - 1n,
+        MAX: (1n << 512n) - 1n,
+    },
+    "576_9": {
+        limb_num: 9,
+        limb_size: 64n,
+        mask: (1n << 64n) - 1n,
+        MAX: (1n << 512n) - 1n,
+    },
+    "1024_16": {
+        limb_num: 16,
+        limb_size: 64n,
+        mask: (1n << 64n) - 1n,
+        MAX: (1n << 1024n) - 1n,
+    },
+    "1024_8": {
+        limb_num: 8,
+        limb_size: 128n,
+        mask: (1n << 128n) - 1n,
+        MAX: (1n << 1024n) - 1n,
+    },
     "2048_18": {
         limb_num: 18,
         limb_size: 116n,
         mask: (1n << 116n) - 1n,
         MAX: (1n << 2088n) - 1n,
     },
+    "2048_16": {
+        limb_num: 16,
+        limb_size: 64n,
+        mask: (1n << 64n) - 1n,
+        MAX: (1n << 2048n) - 1n,
+    },
+    "2048_8": {
+        limb_num: 8,
+        limb_size: 128n,
+        mask: (1n << 128n) - 1n,
+        MAX: (1n << 2048n) - 1n,
+    },
 };
 
-const BigIntParamList: string[] = ["384_6", "384_3", "384_2", "2048_18"];
+const BigIntParamList: string[] = Object.keys(BigIntParams);
 
 function createBigIntClass(params: BigIntParameter) {
     return class ProvableBigInt extends Struct({
@@ -231,6 +291,12 @@ function createBigIntClass(params: BigIntParameter) {
 
 function rangeCheck(x: Field, bits: number) {
     switch (bits) {
+        case 32:
+            Gadgets.rangeCheck32(x);
+            break;
+        case 48:
+            rangeCheck48(x);
+            break;
         case 64:
             Gadgets.rangeCheck64(x);
             break;
@@ -244,6 +310,18 @@ function rangeCheck(x: Field, bits: number) {
             rangeCheck192(x);
             break;
     }
+}
+
+
+function rangeCheck48(x: Field) {
+    let [x0, x1] = Provable.witnessFields(2, () => [
+        x.toBigInt() & ((1n << 32n) - 1n),
+        x.toBigInt() >> 32n,
+    ]);
+
+    Gadgets.rangeCheck32(x0);
+    Gadgets.rangeCheck16(x1);
+    x0.add(x1.mul(1n << 32n)).assertEquals(x);
 }
 
 /**
