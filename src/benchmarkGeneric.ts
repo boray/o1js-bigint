@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { ZkProgram } from 'o1js';
 import { createBigIntClass, BigIntParams, BigIntParamList } from './BigIntGeneric.js';
 
@@ -79,3 +82,16 @@ for (let i = 0; i < BigIntParamList.length; i++) {
 }
 
 console.log(summary);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logsDir = path.join(__dirname, '../../logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir);
+}
+
+const date = new Date();
+const filename = `benchmark_${date.toISOString().replace(/[:.]/g, '-')}.json`;
+const filepath = path.join(logsDir, filename);
+
+fs.writeFileSync(filepath, JSON.stringify(summary, null, 2));
