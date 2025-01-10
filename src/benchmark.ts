@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { ZkProgram } from 'o1js';
 import { BigInt384, BigInt2048 } from './BigInt.js';
 
@@ -116,8 +119,26 @@ await bigint384ZkProgram.compile();
 await bigint2048ZkProgram.compile();
 console.timeEnd('compile');
 
+
 let BigInt384Summary = await bigint384ZkProgram.analyzeMethods();
 let BigInt2048Summary = await bigint2048ZkProgram.analyzeMethods();
+
+const summary = {
+    BigInt384: {
+      add: BigInt384Summary.add.rows,
+      sub: BigInt384Summary.sub.rows,
+      mul: BigInt384Summary.mul.rows,
+      div: BigInt384Summary.div.rows,
+      mod: BigInt384Summary.mod.rows,
+    },
+    BigInt2048: {
+      add: BigInt2048Summary.add.rows,
+      sub: BigInt2048Summary.sub.rows,
+      mul: BigInt2048Summary.mul.rows,
+      div: BigInt2048Summary.div.rows,
+      mod: BigInt2048Summary.mod.rows,
+    },
+  };
 
 console.log(`-------------------------------------`);
 console.log(`
@@ -126,15 +147,15 @@ console.log(`
     |--------|------|
     | Method | Rows |
     |--------|------|
-    |  add   | ${BigInt384Summary.add.rows}  |
+    |  add   | ${summary.BigInt384.add}  |
     |--------|------|
-    |  sub   | ${BigInt384Summary.sub.rows}  |
+    |  sub   | ${summary.BigInt384.sub}  |
     |--------|------|
-    |  mul   | ${BigInt384Summary.mul.rows}   |
+    |  mul   | ${summary.BigInt384.mul}   |
     |--------|------|
-    |  div   | ${BigInt384Summary.div.rows}  |
+    |  div   | ${summary.BigInt384.div}  |
     |--------|------|
-    |  mod   | ${BigInt384Summary.mod.rows}  |
+    |  mod   | ${summary.BigInt384.mod}  |
     |--------|------|
     `);
 console.log(`-------------------------------------`);
@@ -144,15 +165,29 @@ console.log(`
     |--------|------|
     | Method | Rows |
     |--------|------|
-    |  add   | ${BigInt2048Summary.add.rows} |
+    |  add   | ${summary.BigInt2048.add} |
     |--------|------|
-    |  sub   | ${BigInt2048Summary.sub.rows}  |
+    |  sub   | ${summary.BigInt2048.sub}  |
     |--------|------|
-    |  mul   | ${BigInt2048Summary.mul.rows}  |
+    |  mul   | ${summary.BigInt2048.mul}  |
     |--------|------|
-    |  div   | ${BigInt2048Summary.div.rows} |
+    |  div   | ${summary.BigInt2048.div} |
     |--------|------|
-    |  mod   | ${BigInt2048Summary.mod.rows} |
+    |  mod   | ${summary.BigInt2048.mod} |
     |--------|------|
     `);
 console.log(`-------------------------------------`);
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logsDir = path.join(__dirname, '../../logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir);
+}
+
+const date = new Date();
+const filename = `benchmark_${date.toISOString().replace(/[:.]/g, '-')}.json`;
+const filepath = path.join(logsDir, filename);
+
+fs.writeFileSync(filepath, JSON.stringify(summary, null, 2));
