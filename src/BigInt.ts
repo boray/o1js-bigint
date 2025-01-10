@@ -98,8 +98,8 @@ class BigInt384 extends Struct({
 
     return new BigInt384({
       fields,
-      value: Unconstrained.from(
-        (a.value.get() + b.value.get()) % this.value.get()
+      value: Unconstrained.witness(
+        () => (a.value.get() + b.value.get()) % this.value.get()
       ),
     });
   }
@@ -117,8 +117,8 @@ class BigInt384 extends Struct({
 
     return new BigInt384({
       fields,
-      value: Unconstrained.from(
-        (a.value.get() - b.value.get()) % this.value.get()
+      value: Unconstrained.witness(
+        () => (a.value.get() - b.value.get()) % this.value.get()
       ),
     });
   }
