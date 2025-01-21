@@ -1,3 +1,3 @@
-import { BigInt384, BigInt2048 } from './BigInt.js';
+import { createBigIntClass, BigIntParams } from './BigIntGeneric.js';
 
-export { BigInt384, BigInt2048 };
+export { createBigIntClass, BigIntParams };

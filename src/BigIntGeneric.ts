@@ -103,6 +103,15 @@ function createBigIntClass(params: BigIntParameter) {
         fields: Provable.Array(Field, params.limb_num),
         value: Unconstrained.withEmpty(0n),
     }) {
+
+        static zero(): ProvableBigInt {
+            return ProvableBigInt.fromBigint(0n);
+        }
+
+        static one(): ProvableBigInt {
+            return ProvableBigInt.fromBigint(1n);
+        }
+
         static fromBigint(x: bigint) {
             let fields = [];
             let value = x;
@@ -116,6 +125,7 @@ function createBigIntClass(params: BigIntParameter) {
                 fields.push(Field.from(x & params.mask)); // fields[i] = x & 2^64 - 1
                 x >>= params.limb_size; // x = x >> 64
             }
+            // TODO: reduce the x for modulo
             return new ProvableBigInt({ fields, value: Unconstrained.from(value) });
         }
 
@@ -129,6 +139,12 @@ function createBigIntClass(params: BigIntParameter) {
             return result;
         }
 
+        /**
+         * Adds two ProvableBigInt instances
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns The sum as a ProvableBigInt
+         */
         add(a: ProvableBigInt, b: ProvableBigInt): ProvableBigInt {
             let fields: Field[] = [];
             let carry = Field.from(0);
@@ -162,6 +178,12 @@ function createBigIntClass(params: BigIntParameter) {
             });
         }
 
+        /**
+         * Subtracts one ProvableBigInt from another
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns The difference as a ProvableBigInt
+         */
         sub(a: ProvableBigInt, b: ProvableBigInt): ProvableBigInt {
             let fields = [];
             let borrow = Field.from(0);
@@ -180,6 +202,12 @@ function createBigIntClass(params: BigIntParameter) {
             });
         }
 
+        /**
+         * Multiplies two ProvableBigInt instances
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns The product as a ProvableBigInt
+         */
         mul(a: ProvableBigInt, b: ProvableBigInt): ProvableBigInt {
             let { q, r } = Provable.witness(
                 Struct({ q: ProvableBigInt, r: ProvableBigInt }),
@@ -218,6 +246,12 @@ function createBigIntClass(params: BigIntParameter) {
             return r;
         }
 
+        /**
+         * Divides one ProvableBigInt by another and returns the quotient and remainder
+         * @param a The dividend
+         * @param b The divisor
+         * @returns An object containing the quotient and remainder as ProvableBigInt
+         */
         div(
             a: ProvableBigInt,
             b: ProvableBigInt
@@ -239,10 +273,97 @@ function createBigIntClass(params: BigIntParameter) {
             };
         }
 
+        /**
+         * Computes the modulus of a ProvableBigInt with respect to modulus as a ProvableBigInt
+         * @param a The number to find the modulus of
+         * @returns The modulus as a ProvableBigInt
+         */
         mod(a: ProvableBigInt): ProvableBigInt {
             return this.div(a, this).remainder;
         }
 
+        /**
+         * Computes the square root of a Provable BigInt
+         * @param a The number to find the square root of
+         * @returns The square root as a ProvableBigInt
+         */
+        sqrt(a: ProvableBigInt): ProvableBigInt {
+            let r = Provable.witness(
+                ProvableBigInt,
+                () => {
+                    const p = this.toBigint();
+                    // Special cases
+                    // Case 1: If input is 0, square root is 0
+                    if (a.toBigint() === 0n) return ProvableBigInt.fromBigint(0n);
+
+                    // Case 2: If p ≡ 3 (mod 4), we can use a simpler formula
+                    // In this case, the square root is a^((p+1)/4) mod p
+                    if (p % 4n === 3n) {
+                        const sqrt = a.toBigint() ** ((p + 1n) / 4n) % p;
+                        return ProvableBigInt.fromBigint(sqrt);
+                    }
+
+                    // Tonelli-Shanks Algorithm
+                    // Step 1: Factor out powers of 2 from p-1
+                    // Write p-1 = Q * 2^S where Q is odd
+                    let Q = p - 1n;
+                    let S = 0n;
+                    while (Q % 2n === 0n) {
+                        Q /= 2n;
+                        S += 1n;
+                    }
+
+                    // Step 2: Find a quadratic non-residue z
+                    // This is any number z where z^((p-1)/2) ≡ -1 (mod p)
+                    let z = 2n;
+                    while (z ** ((p - 1n) / 2n) % p !== p - 1n) {
+                        z += 1n;
+                    }
+
+                    // Step 3: Initialize main loop variables
+                    let M = S;
+                    let c = z ** Q % p;
+                    let t = a.toBigint() ** Q % p;
+                    let R = a.toBigint() ** ((Q + 1n) / 2n) % p;
+
+                    // Main loop of Tonelli-Shanks algorithm
+                    while (t !== 0n && t !== 1n) {
+                        // Find least value of i, 0 < i < M, such that t^(2^i) = 1
+                        let t2i = t;
+                        let i = 0n;
+                        for (i = 1n; i < M; i++) {
+                            t2i = t2i ** 2n % p;
+                            if (t2i === 1n) break;
+                        }
+
+                        // If no solution found, the input has no square root
+                        if (i === M && M - i - 1n < 0n) {
+                            throw new Error("Tonelli-Shanks algorithm failed to find a solution. Make sure modulo is prime!");
+                        }
+
+                        // Update variables for next iteration
+                        const b = c ** (2n ** (M - i - 1n)) % p;
+                        M = i;
+                        c = b ** 2n % p;
+                        t = t * c % p;
+                        R = R * b % p;
+                    }
+
+                    return ProvableBigInt.fromBigint(R);
+                }
+            );
+
+            ProvableBigInt.equals(this.mul(r, r), a).assertTrue();
+
+            return r;
+        }
+
+        /**
+         * Checks if one ProvableBigInt is greater than another
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns A Bool indicating if a is greater than b
+         */
         static greaterThan(a: ProvableBigInt, b: ProvableBigInt): Bool {
             let result = Bool(false);
             for (let i = 0; i < params.limb_num; i++) {
@@ -253,6 +374,13 @@ function createBigIntClass(params: BigIntParameter) {
             return result;
         }
 
+
+        /**
+         * Checks if one ProvableBigInt is greater than or equal to another
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns A Bool indicating if a is greater than or equal to b
+         */
         static greaterThanOrEqual(a: ProvableBigInt, b: ProvableBigInt): Bool {
             let result = Bool(false);
             for (let i = 0; i < params.limb_num; i++) {
@@ -263,6 +391,12 @@ function createBigIntClass(params: BigIntParameter) {
             return result.or(ProvableBigInt.equals(a, b));
         }
 
+        /**
+         * Checks if one ProvableBigInt is less than another
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns A Bool indicating if a is less than b
+         */
         static lessThan(a: ProvableBigInt, b: ProvableBigInt): Bool {
             let result = Bool.fromValue(false);
             for (let i = 0; i < params.limb_num; i++) {
@@ -273,6 +407,12 @@ function createBigIntClass(params: BigIntParameter) {
             return result;
         }
 
+        /**
+         * Checks if one ProvableBigInt is less than or equal to another
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns A Bool indicating if a is less than or equal to b
+         */
         static lessThanOrEqual(a: ProvableBigInt, b: ProvableBigInt): Bool {
             let result = Bool.fromValue(false);
             for (let i = 0; i < params.limb_num; i++) {
@@ -283,8 +423,25 @@ function createBigIntClass(params: BigIntParameter) {
             return result.or(ProvableBigInt.equals(a, b));
         }
 
+        /**
+         * Checks if one ProvableBigInt is equal to another
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns A Bool indicating if a is equal to b
+         */
         static equals(a: ProvableBigInt, b: ProvableBigInt): Bool {
             return Provable.equal(ProvableBigInt, a, b);
+        }
+
+        /**
+         * Checks if one ProvableBigInt is less than or equal to another
+         * @param a The first ProvableBigInt
+         * @param b The second ProvableBigInt
+         * @returns A Bool indicating if a is less than or equal to b
+         */
+        static assertEquals(a: ProvableBigInt, b: ProvableBigInt) {
+            Provable.equal(ProvableBigInt, a, b).assertTrue();
+
         }
     };
 }

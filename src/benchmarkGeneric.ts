@@ -62,6 +62,15 @@ function runCircuit(bits: string) {
                     modulus.mod(a);
                 },
             },
+            sqrt: {
+                privateInputs: [ProvableBigInt, ProvableBigInt],
+                async method(
+                    a: InstanceType<typeof ProvableBigInt>,
+                    modulus: InstanceType<typeof ProvableBigInt>
+                ) {
+                    modulus.sqrt(a);
+                },
+            },
         },
     });
 }
@@ -77,6 +86,7 @@ for (let i = 0; i < BigIntParamList.length; i++) {
         mul: BigIntSummary.mul.rows,
         div: BigIntSummary.div.rows,
         mod: BigIntSummary.mod.rows,
+        sqrt: BigIntSummary.sqrt.rows,
     };
     summary.push(formattedSummary);
 }
