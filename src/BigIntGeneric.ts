@@ -295,12 +295,13 @@ function createBigIntClass(params: BigIntParameter) {
             let inverse = Provable.witness(
                 ProvableBigInt,
                 () => {
-                    const p = this.toBigint(); // Assuming `this.value` is the prime modulus
+                    const p = this.toBigint();
                     let t = 0n;
                     let newT = 1n;
                     let r = p;
                     let newR = a.toBigint();
 
+                    // Loop until newR is equal to zero
                     while (newR !== 0n) {
                         const quotient = r / newR;
 
@@ -308,6 +309,7 @@ function createBigIntClass(params: BigIntParameter) {
                         [r, newR] = [newR, r - quotient * newR];
                     }
 
+                    // If r is bigger than 1, a is not invertible
                     if (r > 1n) {
                         throw new Error('a is not invertible');
                     }
