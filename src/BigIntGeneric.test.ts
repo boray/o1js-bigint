@@ -273,6 +273,52 @@ describe('BigInt384', () => {
 
   });
 
+  describe('Negate', () => {
+    it('should correctly compute the additive inverse of a ProvableBigInt', () => {
+      const modulo = BigInt384.fromBigint(13n);
+      const a = BigInt384.fromBigint(9n);
+      const result = modulo.negate(a);
+      expect(result.toBigint()).toStrictEqual(4n); // 13 - 9 = 4
+    });
+  
+    it('should correctly compute the additive inverse of 0', () => {
+      const modulo = BigInt384.fromBigint(13n);
+      const a = BigInt384.fromBigint(0n);
+      const result = modulo.negate(a);
+      expect(result.toBigint()).toStrictEqual(0n); // 13 - 0 = 0
+    });
+  
+    it('should correctly compute the additive inverse of a large number', () => {
+      const modulo = BigInt384.fromBigint(104729n); // A large prime number
+      const a = BigInt384.fromBigint(104728n);
+      const result = modulo.negate(a);
+      expect(result.toBigint()).toStrictEqual(1n); // 104729 - 104728 = 1
+    });
+  });
+
+  describe('Inverse', () => {
+    it('should correctly compute the modular inverse of a ProvableBigInt', () => {
+      const modulo = BigInt384.fromBigint(13n);
+      const a = BigInt384.fromBigint(2n);
+      const result = modulo.inverse(a);
+      expect(result.toBigint()).toStrictEqual(7n); // 2 * 7 ≡ 1 (mod 13)
+    });
+  
+    it('should correctly compute the modular inverse of 1', () => {
+      const modulo = BigInt384.fromBigint(13n);
+      const a = BigInt384.fromBigint(1n);
+      const result = modulo.inverse(a);
+      expect(result.toBigint()).toStrictEqual(1n); // 1 * 1 ≡ 1 (mod 13)
+    });
+  
+    it('should correctly compute the modular inverse of a large number', () => {
+      const modulo = BigInt384.fromBigint(104729n); // A large prime number
+      const a = BigInt384.fromBigint(104728n);
+      const result = modulo.inverse(a);
+      expect(result.toBigint()).toStrictEqual(104728n); // 104728 * 104728 ≡ 1 (mod 104729)
+    });
+  });
+
   describe('Comparison', () => {
     it('should correctly compare two BigInt384 numbers', () => {
       const a = BigInt384.fromBigint(1234567890123456789012345678901234567890n);

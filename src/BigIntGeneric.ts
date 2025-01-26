@@ -139,6 +139,10 @@ function createBigIntClass(params: BigIntParameter) {
             return result;
         }
 
+        toFields(): Field[] {
+            return this.fields;
+        }
+
         /**
          * Adds two ProvableBigInt instances
          * @param a The first ProvableBigInt
@@ -281,6 +285,58 @@ function createBigIntClass(params: BigIntParameter) {
         mod(a: ProvableBigInt): ProvableBigInt {
             return this.div(a, this).remainder;
         }
+
+        /**
+         * Computes the modular inverse of a ProvableBigInt
+         * @param a The number to find the inverse of
+         * @returns The inverse as a ProvableBigInt
+         */
+        inverse(a: ProvableBigInt): ProvableBigInt {
+            let inverse = Provable.witness(
+                ProvableBigInt,
+                () => {
+                    const p = this.toBigint(); // Assuming `this.value` is the prime modulus
+                    let t = 0n;
+                    let newT = 1n;
+                    let r = p;
+                    let newR = a.toBigint();
+
+                    while (newR !== 0n) {
+                        const quotient = r / newR;
+
+                        [t, newT] = [newT, t - quotient * newT];
+                        [r, newR] = [newR, r - quotient * newR];
+                    }
+
+                    if (r > 1n) {
+                        throw new Error('a is not invertible');
+                    }
+
+                    // If t is smaller than zero, add modulus
+                    if (t < 0n) {
+                        t = t + p;
+                    }
+
+                    return ProvableBigInt.fromBigint(t);
+                }
+            );
+
+            ProvableBigInt.equals(this.mul(inverse, a), ProvableBigInt.one()).assertTrue();
+
+            return inverse;
+        }
+
+        /**
+         * Computes the additive inverse of a ProvableBigInt
+         * @param a The ProvableBigInt to negate
+         * @returns The additive inverse as a ProvableBigInt
+         * @summary x + x' = 0 mod p. For all x except 0, inverse of a is equal to (p - a) mod p. Inverse of 0 is 0 itself.
+         */
+        negate(a: ProvableBigInt): ProvableBigInt {
+            // If a is zero, return zero. Otherwise, return the result of subtracting a from the modulus.
+            return Provable.if(ProvableBigInt.equals(a, ProvableBigInt.zero()), ProvableBigInt.zero(), this.sub(this, a));
+        }
+
 
         /**
          * Computes the square root of a Provable BigInt
