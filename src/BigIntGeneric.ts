@@ -62,7 +62,19 @@ const BigIntParams: { [key: string]: BigIntParameter } = {
         limb_num: 9,
         limb_size: 64n,
         mask: (1n << 64n) - 1n,
-        MAX: (1n << 512n) - 1n,
+        MAX: (1n << 576n) - 1n,
+    },
+    "580_5": {
+        limb_num: 5,
+        limb_size: 116n,
+        mask: (1n << 116n) - 1n,
+        MAX: (1n << 580n) - 1n,
+    },
+    "640_5": {
+        limb_num: 5,
+        limb_size: 128n,
+        mask: (1n << 128n) - 1n,
+        MAX: (1n << 640n) - 1n,
     },
     "1024_16": {
         limb_num: 16,
@@ -76,24 +88,18 @@ const BigIntParams: { [key: string]: BigIntParameter } = {
         mask: (1n << 128n) - 1n,
         MAX: (1n << 1024n) - 1n,
     },
-    "2048_18": {
-        limb_num: 18,
-        limb_size: 116n,
-        mask: (1n << 116n) - 1n,
-        MAX: (1n << 2088n) - 1n,
-    },
-    "2048_16": {
-        limb_num: 16,
+    "2048_32": {
+        limb_num: 32,
         limb_size: 64n,
         mask: (1n << 64n) - 1n,
         MAX: (1n << 2048n) - 1n,
     },
-    "2048_8": {
-        limb_num: 8,
+    "2048_16": {
+        limb_num: 16,
         limb_size: 128n,
         mask: (1n << 128n) - 1n,
         MAX: (1n << 2048n) - 1n,
-    },
+    }
 };
 
 const BigIntParamList: string[] = Object.keys(BigIntParams);
