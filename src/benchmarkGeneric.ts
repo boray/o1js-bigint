@@ -71,6 +71,33 @@ function runCircuit(bits: string) {
                     modulus.sqrt(a);
                 },
             },
+            lessThan: {
+                privateInputs: [ProvableBigInt, ProvableBigInt],
+                async method(
+                    a: InstanceType<typeof ProvableBigInt>,
+                    b: InstanceType<typeof ProvableBigInt>,
+                ) {
+                    ProvableBigInt.lessThan(a, b);
+                },
+            },
+            lessThanOrEqual: {
+                privateInputs: [ProvableBigInt, ProvableBigInt],
+                async method(
+                    a: InstanceType<typeof ProvableBigInt>,
+                    b: InstanceType<typeof ProvableBigInt>,
+                ) {
+                    ProvableBigInt.lessThanOrEqual(a, b);
+                },
+            },
+            equals: {
+                privateInputs: [ProvableBigInt, ProvableBigInt],
+                async method(
+                    a: InstanceType<typeof ProvableBigInt>,
+                    b: InstanceType<typeof ProvableBigInt>,
+                ) {
+                    ProvableBigInt.equals(a, b);
+                },
+            },
         },
     });
 }
@@ -87,6 +114,9 @@ for (let i = 0; i < BigIntParamList.length; i++) {
         div: BigIntSummary.div.rows,
         mod: BigIntSummary.mod.rows,
         sqrt: BigIntSummary.sqrt.rows,
+        lessThan: BigIntSummary.lessThan.rows,
+        lessThanOrEqual: BigIntSummary.lessThanOrEqual.rows,
+        equals: BigIntSummary.equals.rows,
     };
     summary.push(formattedSummary);
 }
