@@ -71,6 +71,16 @@ function runCircuit(bits: string) {
                     modulus.sqrt(a);
                 },
             },
+            pow: {
+                privateInputs: [ProvableBigInt, ProvableBigInt, ProvableBigInt],
+                async method(
+                    a: InstanceType<typeof ProvableBigInt>,
+                    b: InstanceType<typeof ProvableBigInt>,
+                    modulus: InstanceType<typeof ProvableBigInt>,
+                ) {
+                    modulus.pow(a,b);
+                },
+            },
             lessThan: {
                 privateInputs: [ProvableBigInt, ProvableBigInt],
                 async method(
@@ -114,6 +124,7 @@ for (let i = 0; i < BigIntParamList.length; i++) {
         div: BigIntSummary.div.rows,
         mod: BigIntSummary.mod.rows,
         sqrt: BigIntSummary.sqrt.rows,
+        pow: BigIntSummary.pow.rows,
         lessThan: BigIntSummary.lessThan.rows,
         lessThanOrEqual: BigIntSummary.lessThanOrEqual.rows,
         equals: BigIntSummary.equals.rows,

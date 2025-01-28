@@ -41,11 +41,12 @@ describe('BigInt384', () => {
     });
 
     it('should correctly add two BigInt384 numbers with big modulo', () => {
-      const modulo = BigInt384.fromBigint(2n ** 384n - 1n);
-      const a = BigInt384.fromBigint(2n ** 381n - 1n);
-      const b = BigInt384.fromBigint(2n ** 381n - 1n);
+      const modulo = BigInt384.fromBigint((2n ** 384n) - 1n);
+      const a = BigInt384.fromBigint((2n ** 381n) - 1n);
+      const b = BigInt384.fromBigint((2n ** 381n) - 1n);
       const result = modulo.add(a, b);
-      expect(result.toBigint()).toStrictEqual((2n ** 385n - 2n) % 2n ** 384n);
+      const expected = ((2n ** 381n - 1n) + (2n ** 381n - 1n)) % ((2n ** 384n) - 1n);
+      expect(result.toBigint()).toStrictEqual(expected);
     });
 
     it('should correctly add two maximum BigInt384 numbers', () => {
@@ -59,16 +60,13 @@ describe('BigInt384', () => {
     });
 
     it('should correctly add two BigInt384 numbers with brainpoolP384r1 modulus', () => {
-      const modulo =
-        BigInt384.fromBigint(
-          0x8cb91e82a3386d280f5d6f7e50e641df152f7109ed5456b412b1da197fb71123acd3a729901d1a71874700133107ec53n
-        );
+      const brainpoolP384r1Modulus = 0x8cb91e82a3386d280f5d6f7e50e641df152f7109ed5456b412b1da197fb71123acd3a729901d1a71874700133107ec53n;
+      const modulo = BigInt384.fromBigint(brainpoolP384r1Modulus);
       const a = BigInt384.fromBigint(modulo.toBigint() - 1n);
       const b = BigInt384.fromBigint(modulo.toBigint() - 1n);
       const result = modulo.add(a, b);
-      expect(result.toBigint()).toStrictEqual(
-        (modulo.toBigint() * 2n - 2n)  % modulo.toBigint()
-      );
+      const expected = ((modulo.toBigint() - 1n) + (modulo.toBigint() - 1n)) % modulo.toBigint();
+      expect(result.toBigint()).toStrictEqual(expected);
     });
 
     it('should correctly add two BigInt384 numbers with small number modulo', () => {
@@ -316,6 +314,48 @@ describe('BigInt384', () => {
       const a = BigInt384.fromBigint(104728n);
       const result = modulo.inverse(a);
       expect(result.toBigint()).toStrictEqual(104728n); // 104728 * 104728 ≡ 1 (mod 104729)
+    });
+  });
+
+  describe('Power', () => {
+    it('should correctly compute the power of a ProvableBigInt with exponent 0', () => {
+      const modulo = BigInt384.fromBigint(13n);
+      const base = BigInt384.fromBigint(5n);
+      const exponent = BigInt384.fromBigint(0n);
+      const result = modulo.pow(base, exponent);
+      expect(result.toBigint()).toStrictEqual(1n); // 5^0 ≡ 1 (mod 13)
+    });
+
+    it('should correctly compute the power of a ProvableBigInt with exponent 1', () => {
+      const modulo = BigInt384.fromBigint(13n);
+      const base = BigInt384.fromBigint(5n);
+      const exponent = BigInt384.fromBigint(1n);
+      const result = modulo.pow(base, exponent);
+      expect(result.toBigint()).toStrictEqual(5n); // 5^1 ≡ 5 (mod 13)
+    });
+
+    it('should correctly compute the power of a ProvableBigInt with a small exponent', () => {
+      const modulo = BigInt384.fromBigint(13n);
+      const base = BigInt384.fromBigint(5n);
+      const exponent = BigInt384.fromBigint(3n);
+      const result = modulo.pow(base, exponent);
+      expect(result.toBigint()).toStrictEqual(8n); // 5^3 ≡ 125 ≡ 8 (mod 13)
+    });
+
+    it('should correctly compute the power of a ProvableBigInt with a large exponent', () => {
+      const modulo = BigInt384.fromBigint(104729n); // A large prime number
+      const base = BigInt384.fromBigint(2n);
+      const exponent = BigInt384.fromBigint(1000n);
+      const result = modulo.pow(base, exponent);
+      expect(result.toBigint()).toStrictEqual(4096n); // 2^1000 % 104729
+    });
+
+    it('should correctly compute the power of a ProvableBigInt with a large base and exponent', () => {
+      const modulo = BigInt384.fromBigint(104729n); // A large prime number
+      const base = BigInt384.fromBigint(104728n);
+      const exponent = BigInt384.fromBigint(104728n);
+      const result = modulo.pow(base, exponent);
+      expect(result.toBigint()).toStrictEqual(1n); // 104728^104728 % 104729
     });
   });
 

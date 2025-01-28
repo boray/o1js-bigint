@@ -149,6 +149,10 @@ function createBigIntClass(params: BigIntParameter) {
             return this.fields;
         }
 
+        toBits(): Bool[] {
+            return this.fields.flatMap(field => field.toBits());
+        }
+
         /**
          * Adds two ProvableBigInt instances
          * @param a The first ProvableBigInt
@@ -345,6 +349,44 @@ function createBigIntClass(params: BigIntParameter) {
             return Provable.if(ProvableBigInt.equals(a, ProvableBigInt.zero()), ProvableBigInt.zero(), this.sub(this, a));
         }
 
+        /**
+         * Computes the power of a ProvableBigInt raised to an exponent
+         * @param a The base
+         * @param exp The exponent
+         * @returns The result as a ProvableBigInt
+         */
+        pow(a: ProvableBigInt, exp: ProvableBigInt): ProvableBigInt {
+            let r = Provable.witness(
+                ProvableBigInt,
+                () => {
+                    const modulo = this.toBigint();
+                    const b = a.toBigint();
+                    const x = exp.toBigint();
+                    const res = b ** x;
+                    return ProvableBigInt.fromBigint(res % modulo);
+                });
+
+            const exponentBits = exp.toBits();
+            let result = ProvableBigInt.one();
+            let base = a;
+
+            // Square-and-multiply algorithm
+            for (let i = 0; i < exponentBits.length; i++) {
+                // If current bit is 1, multiply result by base
+                result = Provable.if(
+                    exponentBits[i],
+                    this.mul(result, base),
+                    result
+                );
+
+                // Square the base
+                base = this.mul(base, base);
+            }
+
+            ProvableBigInt.assertEquals(result, r);
+
+            return r;
+        }
 
         /**
          * Computes the square root of a Provable BigInt
