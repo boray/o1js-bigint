@@ -365,12 +365,12 @@ function createBigIntClass(params: BigIntParameter) {
                     const res = b ** x % modulo;
                     return ProvableBigInt.fromBigint(res);
                 });
-                const exponentBits = exp.toBits();
+            const exponentBits = exp.toBits();
 
 
             let result = ProvableBigInt.one();
             let base = a;
-            
+
             // Square-and-multiply algorithm
             for (let i = 0; i < exponentBits.length; i++) {
                 // If current bit is 1, multiply result by base
@@ -385,9 +385,9 @@ function createBigIntClass(params: BigIntParameter) {
 
                 if (i % 100 === 0) {
                     if (global.gc) {
-                      global.gc();
+                        global.gc();
                     } else {
-                      console.warn('Manual garbage collection is not enabled. Run Node.js with --expose-gc to enable it.');
+                        console.warn('Manual garbage collection is not enabled. Run Node.js with --expose-gc to enable it.');
                     }
                 }
             }
@@ -500,15 +500,15 @@ function createBigIntClass(params: BigIntParameter) {
          */
         static greaterThanOrEqual(a: ProvableBigInt, b: ProvableBigInt): Bool {
             return a.fields
-            .map((field, i) => ({
-              isGreater: field.greaterThan(b.fields[i]),
-              isEqual: field.equals(b.fields[i]),
-            }))
-            .reduce(
-              (result, { isGreater, isEqual }) => isGreater.or(result.and(isEqual)),
-              Bool(false)
-            )
-            .or(ProvableBigInt.equals(a, b));
+                .map((field, i) => ({
+                    isGreater: field.greaterThan(b.fields[i]),
+                    isEqual: field.equals(b.fields[i]),
+                }))
+                .reduce(
+                    (result, { isGreater, isEqual }) => isGreater.or(result.and(isEqual)),
+                    Bool(false)
+                )
+                .or(ProvableBigInt.equals(a, b));
         }
 
         /**
@@ -537,15 +537,15 @@ function createBigIntClass(params: BigIntParameter) {
          */
         static lessThanOrEqual(a: ProvableBigInt, b: ProvableBigInt): Bool {
             return a.fields
-            .map((field, i) => ({
-              isLess: field.lessThan(b.fields[i]),
-              isEqual: field.equals(b.fields[i]),
-            }))
-            .reduce(
-              (result, { isLess, isEqual }) => isLess.or(result.and(isEqual)),
-              Bool(false)
-            )
-            .or(ProvableBigInt.equals(a, b));
+                .map((field, i) => ({
+                    isLess: field.lessThan(b.fields[i]),
+                    isEqual: field.equals(b.fields[i]),
+                }))
+                .reduce(
+                    (result, { isLess, isEqual }) => isLess.or(result.and(isEqual)),
+                    Bool(false)
+                )
+                .or(ProvableBigInt.equals(a, b));
         }
 
         /**
