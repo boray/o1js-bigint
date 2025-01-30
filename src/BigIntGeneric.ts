@@ -480,13 +480,15 @@ function createBigIntClass(params: BigIntParameter) {
          * @returns A Bool indicating if a is greater than b
          */
         static greaterThan(a: ProvableBigInt, b: ProvableBigInt): Bool {
-            let result = Bool(false);
-            for (let i = 0; i < params.limb_num; i++) {
-                let isGreater = a.fields[i].greaterThan(b.fields[i]);
-                let isEqual = a.fields[i].equals(b.fields[i]);
-                result = isGreater.or(result.and(isEqual));
-            }
-            return result;
+            return a.fields
+                .map((field, i) => ({
+                    isGreater: field.greaterThan(b.fields[i]),
+                    isEqual: field.equals(b.fields[i]),
+                }))
+                .reduce(
+                    (result, { isGreater, isEqual }) => isGreater.or(result.and(isEqual)),
+                    Bool(false)
+                );
         }
 
 
@@ -497,13 +499,16 @@ function createBigIntClass(params: BigIntParameter) {
          * @returns A Bool indicating if a is greater than or equal to b
          */
         static greaterThanOrEqual(a: ProvableBigInt, b: ProvableBigInt): Bool {
-            let result = Bool(false);
-            for (let i = 0; i < params.limb_num; i++) {
-                let isGreater = a.fields[i].greaterThan(b.fields[i]);
-                let isEqual = a.fields[i].equals(b.fields[i]);
-                result = isGreater.or(result.and(isEqual));
-            }
-            return result.or(ProvableBigInt.equals(a, b));
+            return a.fields
+            .map((field, i) => ({
+              isGreater: field.greaterThan(b.fields[i]),
+              isEqual: field.equals(b.fields[i]),
+            }))
+            .reduce(
+              (result, { isGreater, isEqual }) => isGreater.or(result.and(isEqual)),
+              Bool(false)
+            )
+            .or(ProvableBigInt.equals(a, b));
         }
 
         /**
@@ -513,13 +518,15 @@ function createBigIntClass(params: BigIntParameter) {
          * @returns A Bool indicating if a is less than b
          */
         static lessThan(a: ProvableBigInt, b: ProvableBigInt): Bool {
-            let result = Bool.fromValue(false);
-            for (let i = 0; i < params.limb_num; i++) {
-                let isLess = a.fields[i].lessThan(b.fields[i]);
-                let isEqual = a.fields[i].equals(b.fields[i]);
-                result = isLess.or(result.and(isEqual));
-            }
-            return result;
+            return a.fields
+                .map((field, i) => ({
+                    isLess: field.lessThan(b.fields[i]),
+                    isEqual: field.equals(b.fields[i]),
+                }))
+                .reduce(
+                    (result, { isLess, isEqual }) => isLess.or(result.and(isEqual)),
+                    Bool(false)
+                );
         }
 
         /**
@@ -529,13 +536,16 @@ function createBigIntClass(params: BigIntParameter) {
          * @returns A Bool indicating if a is less than or equal to b
          */
         static lessThanOrEqual(a: ProvableBigInt, b: ProvableBigInt): Bool {
-            let result = Bool.fromValue(false);
-            for (let i = 0; i < params.limb_num; i++) {
-                let isLess = a.fields[i].lessThan(b.fields[i]);
-                let isEqual = a.fields[i].equals(b.fields[i]);
-                result = isLess.or(result.and(isEqual));
-            }
-            return result.or(ProvableBigInt.equals(a, b));
+            return a.fields
+            .map((field, i) => ({
+              isLess: field.lessThan(b.fields[i]),
+              isEqual: field.equals(b.fields[i]),
+            }))
+            .reduce(
+              (result, { isLess, isEqual }) => isLess.or(result.and(isEqual)),
+              Bool(false)
+            )
+            .or(ProvableBigInt.equals(a, b));
         }
 
         /**
