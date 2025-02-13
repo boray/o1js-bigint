@@ -40,7 +40,7 @@ function runCircuit(bits: string) {
                     b: InstanceType<typeof ProvableBigInt>,
                     modulus: InstanceType<typeof ProvableBigInt>
                 ) {
-                    modulus.mul(a, b);
+                    modulus.mul(a, b, false);
                 },
             },
             div: {
